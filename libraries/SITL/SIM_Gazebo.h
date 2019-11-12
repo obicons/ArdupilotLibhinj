@@ -20,6 +20,7 @@
 
 #include "SIM_Aircraft.h"
 #include <AP_HAL/utility/Socket.h>
+#include <semaphore.h>
 
 namespace SITL {
 
@@ -29,6 +30,8 @@ namespace SITL {
 class Gazebo : public Aircraft {
 public:
     Gazebo(const char *home_str, const char *frame_str);
+
+    ~Gazebo();
 
     /* update model by one time step */
     void update(const struct sitl_input &input) override;
@@ -66,12 +69,21 @@ private:
     void send_servos(const struct sitl_input &input);
     void drain_sockets();
 
+    bool accel_ok(const fdm_packet *pkt);
+    bool gyro_ok(const fdm_packet *pkt);
+    bool quat_ok(const fdm_packet *pkt);
+    bool velocity_ok(const fdm_packet *pkt);
+    bool pos_ok(const fdm_packet *pkt);
+
     double last_timestamp;
 
     SocketAPM socket_sitl;
     const char *_gazebo_address = "127.0.0.1";
     int _gazebo_port = 9002;
     static const uint64_t GAZEBO_TIMEOUT_US = 5000000;
+
+    int socket_fd;
+    long long iteration_count;
 };
 
 }  // namespace SITL

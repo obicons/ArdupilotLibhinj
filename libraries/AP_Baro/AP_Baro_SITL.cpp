@@ -1,6 +1,11 @@
 #include <AP_HAL/AP_HAL.h>
 #include <AP_Vehicle/AP_Vehicle_Type.h>
 
+#include <cstdio>
+extern "C" {
+    #include <libhinj.h>
+}
+
 #if CONFIG_HAL_BOARD == HAL_BOARD_SITL
 
 #include "AP_Baro_SITL.h"
@@ -47,6 +52,7 @@ void AP_Baro_SITL::_timer()
 
     // 100Hz
     const uint32_t now = AP_HAL::millis();
+    const uint32_t prev_sample_time = _last_sample_time;
     if ((now - _last_sample_time) < 10) {
         return;
     }
@@ -113,6 +119,18 @@ void AP_Baro_SITL::_timer()
     float T = 303.16f * theta - C_TO_KELVIN;  // Assume 30 degrees at sea level - converted to degrees Kelvin
 #endif
 
+    // @injectionpoint
+    int e;
+    if ((e = update_barometer(&p, &T, _instance)) < 0)
+            fprintf(stderr, "barometer: %s\n", hinj_strerror(e));
+
+    if (e == HINJ_IGNORE_SENSOR) {
+            _last_sample_time = prev_sample_time;
+            _frontend.sensors[_instance].healthy = false;
+            return;
+    }
+
+    _frontend.sensors[_instance].healthy = true;
     _recent_press = p;
     _recent_temp = T;
     _has_sample = true;

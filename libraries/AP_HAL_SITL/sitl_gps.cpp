@@ -25,8 +25,14 @@
 #include <stdio.h>
 #include <sys/time.h>
 #include <sys/stat.h>
-#include <sys/types.h>
+// #include <sys/socket.h>
+// #include <sys/un.h>
+// #include <sys/types.h>
 #include <fcntl.h>
+
+extern "C" {
+        #include <libhinj.h>
+}
 
 #pragma GCC diagnostic ignored "-Wunused-result"
 
@@ -305,6 +311,39 @@ void SITL_State::_update_gps_ubx(const struct gps_data *d, uint8_t instance)
     uint32_t time_week_ms;
 
     gps_time(&time_week, &time_week_ms);
+
+    // see https://mavlink.io/en/messages/common.html#HIL_GPS
+    struct gps_pkt _gps_packet = {0};
+
+    _gps_packet.message_type = HINJ_HIL_GPS;
+    _gps_packet.message_size = sizeof(_gps_packet);
+    _gps_packet.instance = instance;
+    _gps_packet.ignore = 0;
+
+    // need to convert GPS time -> Unix time
+    const uint32_t epoch = 86400*(10*365 + (1980-1969)/4 + 1 + 6 - 2) - (GPS_LEAPSECONDS_MILLIS / 1000ULL);
+    _gps_packet.time_usec = (time_week * AP_SEC_PER_WEEK) * 1e6
+        + (time_week_ms * 1000) + (epoch * 1e6);
+    _gps_packet.fix_type = d->have_lock ? 3 : 0;
+    _gps_packet.lat = d->latitude;
+    _gps_packet.lon = d->longitude;
+    _gps_packet.alt = d->altitude * 1000.0f;
+    _gps_packet.eph = 1500;
+    _gps_packet.epv = 2000;
+    _gps_packet.vel = norm(d->speedN, d->speedE) * 100;
+    _gps_packet.vn  = d->speedN;
+    _gps_packet.ve  = d->speedE;
+    _gps_packet.vd  = d->speedD;
+    _gps_packet.cog = ToDeg(atan2f(d->speedE, d->speedN)) * 1000000.0f;
+    _gps_packet.satellites_visible = d->have_lock ? _sitl->gps_numsats : 3;
+
+    // @injectionpoint
+    int e;
+    if ((e = update_gps(&_gps_packet)) < 0) {
+            fprintf(stderr, "error: %s\n", hinj_strerror(e));
+    } else if (e == HINJ_IGNORE_SENSOR) {
+            return;
+    }
 
     pos.time = time_week_ms;
     pos.longitude = d->longitude * 1.0e7;

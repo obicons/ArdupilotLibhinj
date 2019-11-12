@@ -433,7 +433,7 @@ bool AP_Baro::_add_backend(AP_Baro_Backend *backend)
           _num_sensors == BARO_MAX_INSTANCES) { \
           return; \
        } \
-    } while (0)
+    } while (1)
 
 /*
   initialise the barometer object, loading backend drivers

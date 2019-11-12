@@ -196,10 +196,9 @@ def kill_tasks_psutil(victims):
     use this routine"""
     import psutil
     for proc in psutil.process_iter():
-        pdict = proc.as_dict(attrs=['name', 'status'])
-        if pdict['status'] == psutil.STATUS_ZOMBIE:
+        if proc.status == psutil.STATUS_ZOMBIE:
             continue
-        if pdict['name'] in victims:
+        if proc.name in victims:
             proc.kill()
 
 
@@ -294,11 +293,6 @@ def do_build_waf(opts, frame_options):
 
     if opts.OSD:
         cmd_configure.append("--enable-sfml")
-        cmd_configure.append("--sitl-osd")
-
-    if opts.rgbled:
-        cmd_configure.append("--enable-sfml")
-        cmd_configure.append("--sitl-rgbled")
 
     if opts.tonealarm:
         cmd_configure.append("--enable-sfml-audio")
@@ -483,29 +477,29 @@ def run_in_terminal_window(autotest, name, cmd):
     runme.extend(cmd)
     progress_cmd("Run " + name, runme)
 
-    if under_macos() and os.environ.get('DISPLAY'):
-        # on MacOS record the window IDs so we can close them later
-        out = subprocess.Popen(runme, stdout=subprocess.PIPE).communicate()[0]
-        out = out.decode('utf-8')
-        import re
-        p = re.compile('tab 1 of window id (.*)')
+    # if under_macos() and os.environ.get('DISPLAY'):
+    #     # on MacOS record the window IDs so we can close them later
+    #     out = subprocess.Popen(runme, stdout=subprocess.PIPE).communicate()[0]
+    #     out = out.decode('utf-8')
+    #     import re
+    #     p = re.compile('tab 1 of window id (.*)')
 
-        tstart = time.time()
-        while time.time() - tstart < 5:
-            tabs = p.findall(out)
+    #     tstart = time.time()
+    #     while time.time() - tstart < 5:
+    #         tabs = p.findall(out)
 
-            if len(tabs) > 0:
-                break
+    #         if len(tabs) > 0:
+    #             break
 
-            time.sleep(0.1)
-        # sleep for extra 2 seconds for application to start
-        time.sleep(2)
-        if len(tabs) > 0:
-            windowID.append(tabs[0])
-        else:
-            progress("Cannot find %s process terminal" % name)
-    else:
-        p = subprocess.Popen(runme)
+    #         time.sleep(0.1)
+    #     # sleep for extra 2 seconds for application to start
+    #     time.sleep(2)
+    #     if len(tabs) > 0:
+    #         windowID.append(tabs[0])
+    #     else:
+    #         progress("Cannot find %s process terminal" % name)
+    # else:
+    p = subprocess.Popen(runme)
 
 
 tracker_uarta = None  # blemish
@@ -624,7 +618,7 @@ def start_mavproxy(opts, stuff):
         cmd.append("-w")
         cmd.append("mavproxy.exe")
     else:
-        cmd.append("mavproxy.py")
+        cmd.append("./mavproxy.py")
 
     if opts.hil:
         cmd.extend(["--load-module", "HIL"])
@@ -911,11 +905,6 @@ group_sim.add_option("", "--tonealarm",
                      dest='tonealarm',
                      default=False,
                      help="Enable SITL ToneAlarm")
-group_sim.add_option("", "--rgbled",
-                     action='store_true',
-                     dest='rgbled',
-                     default=False,
-                     help="Enable SITL RGBLed")
 group_sim.add_option("", "--add-param-file",
                      type='string',
                      default=None,

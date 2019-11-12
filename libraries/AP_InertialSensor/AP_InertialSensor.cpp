@@ -24,6 +24,8 @@
 #include "AP_InertialSensor_BMI088.h"
 #include "AP_InertialSensor_Invensensev2.h"
 
+#include <stdio.h>
+
 /* Define INS_TIMING_DEBUG to track down scheduling issues with the main loop.
  * Output is on the debug console. */
 #ifdef INS_TIMING_DEBUG
@@ -1250,6 +1252,7 @@ void AP_InertialSensor::_save_gyro_calibration()
  */
 void AP_InertialSensor::update(void)
 {
+
     // during initialisation update() may be called without
     // wait_for_sample(), and a wait is implied
     wait_for_sample();

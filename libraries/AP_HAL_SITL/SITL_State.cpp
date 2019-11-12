@@ -19,6 +19,13 @@
 #include <SITL/SIM_JSBSim.h>
 #include <AP_HAL/utility/Socket.h>
 
+extern "C" {
+    #include <libhinj.h>
+}
+
+// #include <sys/socket.h>
+// #include <sys/un.h>
+
 extern const AP_HAL::HAL& hal;
 
 using namespace HALSITL;
@@ -519,6 +526,12 @@ void SITL_State::_simulator_servos(struct sitl_input &input)
 
                 // assume 50A at full throttle
                 _current = 50.0f * fabsf(throttle);
+
+                // @injectionpoint
+                int e;
+                if ((e = update_battery(&voltage, &_current, &throttle)))
+                        fprintf(stderr, "error: update_battery(): %s\n", hinj_strerror(e));
+
             }
         } else {
             // FDM provides voltage and current

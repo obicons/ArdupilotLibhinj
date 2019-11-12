@@ -953,7 +953,7 @@ void GCS_MAVLINK::handle_mission_item(const mavlink_message_t *msg)
 {
     // TODO: rename packet to mission_item_int
     mavlink_mission_item_int_t packet;
-    if (msg->msgid == MAVLINK_MSG_ID_MISSION_ITEM) {      
+    if (msg->msgid == MAVLINK_MSG_ID_MISSION_ITEM) {
         mavlink_mission_item_t mission_item;
         mavlink_msg_mission_item_decode(msg, &mission_item);
         MAV_MISSION_RESULT ret = AP_Mission::convert_MISSION_ITEM_to_MISSION_ITEM_INT(mission_item, packet);
@@ -1009,6 +1009,7 @@ void GCS_MAVLINK::handle_mission_item(const mavlink_message_t *msg)
     prot->handle_mission_item(*msg, packet);
 }
 
+#include <fstream>
 MAV_MISSION_RESULT MissionItemProtocol_Waypoints::replace_item(const mavlink_mission_item_int_t &mission_item_int)
 {
     AP_Mission::Mission_Command cmd;
@@ -1049,6 +1050,7 @@ MAV_MISSION_RESULT MissionItemProtocol_Waypoints::append_item(const mavlink_miss
     if (!mission.add_cmd(cmd)) {
         return MAV_MISSION_ERROR;
     }
+
     return MAV_MISSION_ACCEPTED;
 }
 

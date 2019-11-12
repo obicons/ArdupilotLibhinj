@@ -23,8 +23,19 @@
 #include <AP_HAL/AP_HAL.h>
 #include <GCS_MAVLink/GCS_MAVLink.h>
 #include <AP_Logger/AP_Logger.h>
+#include <cstdio>
 
 extern const AP_HAL::HAL& hal;
+
+// int
+// make_msg_path(char **path_out)
+// {
+//     char *home = getenv("HOME");
+//     if (!home)
+//         return -1;
+//     return asprintf(path_out, "%s/.hardware_controller", home);
+// }
+
 
 namespace SITL {
 

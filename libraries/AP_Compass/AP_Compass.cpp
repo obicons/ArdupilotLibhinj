@@ -28,6 +28,8 @@
 #include "AP_Compass.h"
 #include "Compass_learn.h"
 
+#include <stdio.h>
+
 extern AP_HAL::HAL& hal;
 
 #if APM_BUILD_TYPE(APM_BUILD_ArduCopter) || APM_BUILD_TYPE(APM_BUILD_ArduSub)

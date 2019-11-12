@@ -58,7 +58,7 @@ while getopts "y" opt; do
     esac
 done
 
-APT_GET="sudo apt-get"
+APT_GET="apt-get"
 if $ASSUME_YES; then
     APT_GET="$APT_GET --assume-yes"
 fi
@@ -72,12 +72,12 @@ fi
 # possibly grab a newer cmake for older ubuntu releases
 read -r UBUNTU_CODENAME <<<$(lsb_release -c -s)
 if [ "$UBUNTU_CODENAME" = "precise" ]; then
-    sudo add-apt-repository ppa:george-edison55/precise-backports -y
+    add-apt-repository ppa:george-edison55/precise-backports -y
 elif [ "$UBUNTU_CODENAME" = "trusty" ]; then
-    sudo add-apt-repository ppa:george-edison55/cmake-3.x -y
+    add-apt-repository ppa:george-edison55/cmake-3.x -y
 fi
 
-sudo usermod -a -G dialout $USER
+usermod -a -G dialout $USER
 
 if dpkg-query -l "modemmanager"; then
     $APT_GET remove modemmanager
@@ -102,9 +102,9 @@ pip2 -q install --user -U $PYTHON_PKGS
 if [ ! -d $OPT/$ARM_ROOT ]; then
     (
         cd $OPT;
-        sudo wget $ARM_TARBALL_URL;
-        sudo tar xjf ${ARM_TARBALL};
-        sudo rm ${ARM_TARBALL};
+        wget $ARM_TARBALL_URL;
+        tar xjf ${ARM_TARBALL};
+        rm ${ARM_TARBALL};
     )
 fi
 

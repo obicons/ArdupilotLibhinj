@@ -87,12 +87,12 @@ class Board:
             '-Wno-redundant-decls',
             '-Wno-unknown-pragmas',
             '-Wno-trigraphs',
-            '-Werror=shadow',
+            # '-Werror=shadow',
             '-Werror=return-type',
             '-Werror=unused-result',
             '-Werror=narrowing',
             '-Werror=attributes',
-            '-Werror=format-extra-args',
+            '-Werror=format-extra-args'
         ]
 
         if cfg.options.enable_scripting:
@@ -127,7 +127,7 @@ class Board:
                 '-Wno-gnu-designator',
                 '-Wno-inconsistent-missing-override',
                 '-Wno-mismatched-tags',
-                '-Wno-gnu-variable-sized-type-not-at-end',
+                '-Wno-gnu-variable-sized-type-not-at-end'
             ]
 
         if cfg.env.DEBUG:
@@ -146,7 +146,6 @@ class Board:
             '-ffunction-sections',
             '-fno-exceptions',
             '-fsigned-char',
-
             '-Wall',
             '-Wextra',
             '-Wformat',
@@ -170,10 +169,10 @@ class Board:
             '-Werror=sign-compare',
             '-Werror=type-limits',
             '-Werror=unused-result',
-            '-Werror=shadow',
+            # '-Werror=shadow',
             '-Werror=unused-variable',
             '-Wfatal-errors',
-            '-Wno-trigraphs',
+            '-Wno-trigraphs'
         ]
 
         if 'clang++' in cfg.env.COMPILER_CXX:
@@ -201,7 +200,7 @@ class Board:
 
                 '-Wno-gnu-designator',
                 '-Wno-mismatched-tags',
-                '-Wno-gnu-variable-sized-type-not-at-end',
+                '-Wno-gnu-variable-sized-type-not-at-end'
             ]
         else:
             env.CXXFLAGS += [
@@ -345,11 +344,16 @@ class sitl(Board):
 
         env.LIB += [
             'm',
+            'hinj'
+        ]
+
+        env.LIBPATH += [
+            '/usr/local/lib/'
         ]
 
         cfg.check_librt(env)
 
-        env.LINKFLAGS += ['-pthread',]
+        env.LINKFLAGS += ['-pthread']
         env.AP_LIBRARIES += [
             'AP_HAL_SITL',
             'SITL',

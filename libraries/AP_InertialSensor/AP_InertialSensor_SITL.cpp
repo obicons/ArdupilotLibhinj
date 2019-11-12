@@ -3,6 +3,10 @@
 #include <SITL/SITL.h>
 #include <stdio.h>
 
+extern "C" {
+    #include <libhinj.h>
+}
+
 #if CONFIG_HAL_BOARD == HAL_BOARD_SITL
 
 const extern AP_HAL::HAL& hal;
@@ -48,6 +52,7 @@ bool AP_InertialSensor_SITL::init_sensor(void)
         if (enable_fast_sampling(gyro_instance[i])) {
             _set_gyro_raw_sample_rate(gyro_instance[i], gyro_sample_hz[i]*8);
         }
+
     }
 
     hal.scheduler->register_timer_process(FUNCTOR_BIND_MEMBER(&AP_InertialSensor_SITL::timer_update, void));
@@ -69,6 +74,7 @@ void AP_InertialSensor_SITL::generate_accel(uint8_t instance)
         accel_noise += instance==0?sitl->accel_noise:sitl->accel2_noise;
     }
 
+    // TODO - should we remove this so we can add our own noise
     // add accel bias and noise
     Vector3f accel_bias = instance==0?sitl->accel_bias.get():sitl->accel2_bias.get();
     float xAccel = sitl->state.xAccel + accel_bias.x;
@@ -85,7 +91,7 @@ void AP_InertialSensor_SITL::generate_accel(uint8_t instance)
         yAccel += sinf(t * 2 * M_PI * vibe_freq.y) * accel_noise;
         zAccel += sinf(t * 2 * M_PI * vibe_freq.z) * accel_noise;
     }
-    
+
     // correct for the acceleration due to the IMU position offset and angular acceleration
     // correct for the centripetal acceleration
     // only apply corrections to first accelerometer
@@ -113,6 +119,13 @@ void AP_InertialSensor_SITL::generate_accel(uint8_t instance)
     }
 
     Vector3f accel = Vector3f(xAccel, yAccel, zAccel);
+
+    // @injectionpoint
+    int e;
+    if ((e = ::update_accel(&accel[0], &accel[1], &accel[2], instance)) < 0)
+            fprintf(stderr, "error: update_accel(): %s\n", hinj_strerror(e));
+    else if (e == HINJ_IGNORE_SENSOR)
+            _inc_accel_error_count(instance);
 
     _rotate_and_correct_accel(accel_instance[instance], accel);
 
@@ -159,8 +172,15 @@ void AP_InertialSensor_SITL::generate_gyro(uint8_t instance)
     gyro.y *= (1 + scale.y*0.01f);
     gyro.z *= (1 + scale.z*0.01f);
 
+    // @injectionpoint
+    int e;
+    if ((e = ::update_gyro(&gyro.x, &gyro.y, &gyro.z, instance)) < 0)
+            fprintf(stderr, "error: update_gyro(): %s\n", hinj_strerror(e));
+    else if (e == HINJ_IGNORE_SENSOR)
+            _inc_gyro_error_count(instance);
+
     _rotate_and_correct_gyro(gyro_instance[instance], gyro);
-    
+
     uint8_t nsamples = enable_fast_sampling(gyro_instance[instance])?8:1;
     for (uint8_t i=0; i<nsamples; i++) {
         _notify_new_gyro_raw_sample(gyro_instance[instance], gyro);
@@ -216,8 +236,8 @@ float AP_InertialSensor_SITL::gyro_drift(void)
 bool AP_InertialSensor_SITL::update(void) 
 {
     for (uint8_t i=0; i<INS_SITL_INSTANCES; i++) {
-        update_accel(accel_instance[i]);
-        update_gyro(gyro_instance[i]);
+            update_accel(accel_instance[i]);
+            update_gyro(gyro_instance[i]);
     }
     return true;
 }

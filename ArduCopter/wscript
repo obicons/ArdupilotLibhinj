@@ -34,18 +34,19 @@ def build(bld):
             'AC_AutoTune',
             'AP_KDECAN',
         ],
+        use=['_libs hinj'],
     )
 
     bld.ap_program(
         program_name='arducopter',
         program_groups=['bin', 'copter'],
-        use=vehicle + '_libs',
+        use=vehicle + '_libs hinj',
         defines=['FRAME_CONFIG=MULTICOPTER_FRAME'],
         )
 
     bld.ap_program(
         program_name='arducopter-heli',
         program_groups=['bin', 'heli'],
-        use=vehicle + '_libs',
+        use=vehicle + '_libs hinj',
         defines=['FRAME_CONFIG=HELI_FRAME'],
         )

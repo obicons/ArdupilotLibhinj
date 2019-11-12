@@ -4,7 +4,6 @@
 #include <AP_Logger/AP_Logger.h>
 #if AP_MODULE_SUPPORTED
 #include <AP_Module/AP_Module.h>
-#include <stdio.h>
 #endif
 
 #define SENSOR_RATE_DEBUG 0

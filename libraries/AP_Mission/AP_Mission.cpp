@@ -5,6 +5,7 @@
 #include <AP_Terrain/AP_Terrain.h>
 #include <GCS_MAVLink/GCS.h>
 #include <AP_AHRS/AP_AHRS.h>
+#include <fstream>
 
 const AP_Param::GroupInfo AP_Mission::var_info[] = {
 
@@ -141,8 +142,16 @@ bool AP_Mission::starts_with_takeoff_cmd()
     // loops in them
     for (uint8_t i=0; i<16; i++, cmd_index++) {
         if (!get_next_nav_cmd(cmd_index, cmd)) {
+                std::ofstream out("/root/test1", std::ofstream::app);
+                out << "starts_with_takeoff: HERE " << cmd_index << std::endl;
+                out.close();
+
             return false;
         }
+        std::ofstream out("/root/test1", std::ofstream::app);
+        out << "starts_with_takeoff: " << cmd.id << std::endl;
+        out.close();
+
         switch (cmd.id) {
         // any of these are considered a takeoff command:
         case MAV_CMD_NAV_TAKEOFF:
@@ -315,7 +324,7 @@ bool AP_Mission::add_cmd(Mission_Command& cmd)
     bool ret = write_cmd_to_storage(_cmd_total, cmd);
 
     if (ret) {
-        // update command's index
+        // update command's index 
         cmd.index = _cmd_total;
         // increment total number of commands
         _cmd_total.set_and_save(_cmd_total + 1);

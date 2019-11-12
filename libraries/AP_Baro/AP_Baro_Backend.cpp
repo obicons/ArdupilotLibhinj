@@ -23,6 +23,7 @@ void AP_Baro_Backend::update_healthy_flag(uint8_t instance)
         (now - _frontend.sensors[instance].last_update_ms < BARO_TIMEOUT_MS) &&
         (now - _frontend.sensors[instance].last_change_ms < BARO_DATA_CHANGE_TIMEOUT_MS) &&
         !is_zero(_frontend.sensors[instance].pressure);
+
 }
 
 void AP_Baro_Backend::backend_update(uint8_t instance)

@@ -47,7 +47,7 @@ static void dump_stack_trace()
     const char *dumpstack = "dumpstack"; // if we can't find it trust in PATH
     struct stat statbuf;
     const char *paths[] {
-        "Tools/scripts/dumpstack",
+        "/root/src/ardupilot/Tools/scripts/dumpstack",
         "APM/Tools/scripts/dumpstack", // for autotest server
     };
     for (uint8_t i=0; i<ARRAY_SIZE(paths); i++) {

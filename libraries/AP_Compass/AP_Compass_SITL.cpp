@@ -1,5 +1,11 @@
 #include "AP_Compass_SITL.h"
 
+extern "C" {
+    #include <libhinj.h>
+}
+
+#include <cstdio>
+
 #include <AP_HAL/AP_HAL.h>
 
 #if CONFIG_HAL_BOARD == HAL_BOARD_SITL
@@ -109,6 +115,15 @@ void AP_Compass_SITL::_timer()
 
     for (uint8_t i=0; i<SITL_NUM_COMPASSES; i++) {
         Vector3f f = new_mag_data;
+
+        // @injectionpoint
+        int e;
+        if ((e = update_compass(&new_mag_data[0], &new_mag_data[1], &new_mag_data[2], i)) < 0)
+                fprintf(stderr, "error: update_compass(): %s\n", hinj_strerror(e));
+
+        if (e == HINJ_IGNORE_SENSOR)
+                continue;
+
         if (i == 0) {
             // rotate the first compass, allowing for testing of external compass rotation
             f.rotate_inverse((enum Rotation)_sitl->mag_orient.get());
